@@ -13,8 +13,8 @@ int main() {
     string tau = "6283185307179586476925286766559005768394338798750211641949889184615632812572417997256069650684234135"; //2*pi
     string gauss = "0834626841674073186281429732799046808993993013490347002449827370103681992709526411869691160351275324"; //Gauss's constant
     string sq2sq2 = "1632526919438152844773495381024719602079108857053114117247780684383035205998616642247855507506626041"; //square(2)^(square(2))
-    string m;
 
+    string m;
     cout << "Type your message: ";
     getline(cin, m);
 
@@ -30,9 +30,8 @@ int main() {
         cout << "Try again: ";
         cin >> w;
     }
-    string newNum; //new string
-    string numCopy; //copy of chosen number
 
+    string numCopy; //copy of chosen number
     switch(w) {
         case 1: numCopy = pi; break;
         case 2: numCopy = euler; break;
@@ -45,6 +44,8 @@ int main() {
     srand(time(NULL));
     int k = rand() % l; //each number has the same amount of digits, so using the length of pi is fine for all of them
     cout << "Chosen Number: " << numCopy << endl;
+
+    string newNum; //offset of chosen number
     for(int i=0; i<l; i++) {
         if(k+i == l) {
             break;
@@ -62,12 +63,21 @@ int main() {
     cout << "New key of offset " << k << ": " << endl;
     cout << newNum << endl;
 
-    string n = m;
-
-    for(int i=0; i<n.length(); i++) { //encrypt message without flipping a coin
+    string n = m; //encrypted message
+    string coinFlips;
+    for(int i=0; i<n.length(); i++) { //encrypt message
         int num = stoi(string(1,newNum[i]));
-        n[i] += num;
+        int c = rand() % 2;
+        if(c == 0) {
+            coinFlips += 'H';
+            n[i] += num;
+        }
+        else if(c == 1) {
+            coinFlips += 'T';
+            n[i] -= num;
+        }
     }
+    cout << "Coin flips: " << coinFlips << endl;
     //Later: if message is longer than the key, wrap around to the beginning of the key again
 
     cout << "New message: " << n << endl;
