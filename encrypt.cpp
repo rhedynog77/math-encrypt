@@ -2,83 +2,64 @@
 #include <string>
 #include <cstdlib>
 #include <time.h>
+#include <fstream>
 
 using namespace std;
 
 int main() {
-    //pi.length() = 100 digits pi[0-99]
-    string pi = "3141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067"; //pi
-    string euler = "2718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427"; //e
-    string phi = "1618033988749894848204586834365638117720309179805762862135448622705260462818902449707207204189391137"; //golden ratio
-    string tau = "6283185307179586476925286766559005768394338798750211641949889184615632812572417997256069650684234135"; //2*pi
-    string gauss = "0834626841674073186281429732799046808993993013490347002449827370103681992709526411869691160351275324"; //Gauss's constant
-    string sq2sq2 = "1632526919438152844773495381024719602079108857053114117247780684383035205998616642247855507506626041"; //square(2)^(square(2))
-
     string m;
     cout << "Type your message: ";
     getline(cin, m);
 
-    //cout << "Your message: " << m << endl;
-
-    int w;
-    cout << "Which number do you want to encrypt with?" << endl;
-    cout << "(1) pi\n(2) e (Euler's number)\n(3) phi (Golden Ratio)\n";
-    cout << "(4) tau (2pi)\n(5) Gauss's constant\n(6) sqrt(2)^(sqrt(2))" << endl;
-    cin >> w;
-
-    while(w != 1 && w != 2 && w != 3 && w != 4 && w != 5 && w != 6) {
-        cout << "Try again: ";
-        cin >> w;
+    ifstream file;
+    file.open("pi-billion.txt"); //downloaded from: https://stuff.mit.edu/afs/sipb/contrib/pi/
+    if(!file.is_open()) {
+        cout << "Unable to open file. Exiting..." << endl;
+        exit(1);
     }
+    string newPi; //key that starts from offset of pi, same length as message
 
-    string numCopy; //copy of chosen number
-    switch(w) {
-        case 1: numCopy = pi; break;
-        case 2: numCopy = euler; break;
-        case 3: numCopy = phi; break;
-        case 4: numCopy = tau; break;
-        case 5: numCopy = gauss; break;
-        case 6: numCopy = sq2sq2;
-    }
-    int l = numCopy.length();
+    int l = 1000000001; //one billion plus initial '3';
     srand(time(NULL));
-    int k = rand() % l; //each number has the same amount of digits, so using the length of pi is fine for all of them
-    cout << "Chosen Number: " << numCopy << endl;
+    int k = rand() % l;
+    cout << "Offset: " << k << endl;
 
-    string newNum; //offset of chosen number
-    for(int i=0; i<l; i++) {
-        if(k+i == l) {
-            break;
-        }
-        else {
-            newNum += numCopy[k+i];
-            //cout << pi[k+i];
-        }
+    char c;
+    for(int i = 0; i < k; i++) {
+        //read first digits of pi before k
+        file >> c;
     }
-    for(int i=0; i<k; i++) {
-        newNum += numCopy[i];
-        //cout << pi[i];
+    while(file >> c && newPi.length() < m.length()) {
+        if(c == '.') continue;
+        newPi += c;
+        //Later: have condition for when we reach end of pi and need to start from beginning?
     }
+    /*if(newPi.length() < m.length()) {
+        while(file >> c && c < k) {
+            newPi += c;
+        }
+    }*/
 
-    cout << "New key of offset " << k << ": " << endl;
-    cout << newNum << endl;
+    file.close();
+
+    cout << "Key: \n" << newPi << endl;
 
     string n = m; //encrypted message
+
     string coinFlips;
-    for(int i=0; i<n.length(); i++) { //encrypt message
-        int num = stoi(string(1,newNum[i]));
-        int c = rand() % 2;
-        if(c == 0) {
+    for(int i=0; i<n.length(); i++) { //encrypt message using coin flips
+        int num = stoi(string(1,newPi[i])); //change ith digit from string to integer
+        int coin = rand() % 2;
+        if(coin == 0) { //if heads
             coinFlips += 'H';
-            n[i] += num;
+            n[i] += num; //move value of ith letter up num positions
         }
-        else if(c == 1) {
+        else if(coin == 1) { //if tails
             coinFlips += 'T';
-            n[i] -= num;
+            n[i] -= num; //move value of ith letter down num positions
         }
     }
     cout << "Coin flips: " << coinFlips << endl;
-    //Later: if message is longer than the key, wrap around to the beginning of the key again
 
     cout << "New message: " << n << endl;
 
